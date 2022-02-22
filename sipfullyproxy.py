@@ -19,7 +19,6 @@ import socket
 # import threading
 import time
 import logging
-
 HOST, PORT = '127.0.0.1', 5060
 #PORT = 5060
 #HOST, PORT = '192.168.56.1', 5060
@@ -71,6 +70,12 @@ ipaddress = socket.gethostbyname(socket.gethostname())
 recordroute = "Record-Route: <sip:%s:%d;lr>" % (ipaddress, PORT)
 topvia = "Via: SIP/2.0/UDP %s:%d" % (ipaddress, PORT)
 registrar = {}
+# moj log
+# call_log = open("call_log.txt", 'w')
+# my_log = CallLogger(call_log)
+my_log = 0
+call_log = 0
+
 
 
 def hexdump(chars, sep, width):
@@ -190,10 +195,6 @@ class UDPHandler(socketserver.BaseRequestHandler):
         data = []
         for line in self.data:
             data.append(line)
-            #print(line)
-            # if isinstance(line, bytes):
-            #     line = line.decode('utf-8')
-            #print("line ", type(line), "to druhe", type(rx_to))
             if rx_to.search(line) or rx_cto.search(line):
                 if not rx_tag.search(line):
                     data[index] = "%s%s" % (line, ";tag=123456")
@@ -213,7 +214,6 @@ class UDPHandler(socketserver.BaseRequestHandler):
             if line == "":
                 break
         data.append("")
-        #text = string.join(data, "\r\n")
         text = "\r\n".join(data).encode("windows-1252")
         self.socket.sendto(text, self.client_address)
         showtime()
@@ -282,6 +282,8 @@ class UDPHandler(socketserver.BaseRequestHandler):
         logging.debug("-----------------")
         logging.debug(" INVITE received ")
         logging.debug("-----------------")
+
+        print("INVITE")
         origin = self.getOrigin()
         if len(origin) == 0 or not origin in registrar:
             self.sendResponse("400 Bad Request")
@@ -300,6 +302,9 @@ class UDPHandler(socketserver.BaseRequestHandler):
                 text = "\r\n".join(data)
                 socket.sendto(text.encode('windows-1252'), claddr)
                 showtime()
+                print("Idem pisat")
+                #call_log.write("INVITE from" + origin +" to "+ destination+ " at "+time.strftime("(%H:%M:%S)", time.localtime())+ "\n")
+                my_log.invite(origin,destination)
                 logging.info("<<< %s" % data[0])
                 logging.debug("---\n<< server send [%d]:\n%s\n---" % (len(text), text))
             else:
@@ -311,9 +316,12 @@ class UDPHandler(socketserver.BaseRequestHandler):
         logging.debug("--------------")
         logging.debug(" ACK received ")
         logging.debug("--------------")
+        print("ACK RECEIVED")
         destination = self.getDestination()
         if len(destination) > 0:
             logging.info("destination %s" % destination)
+            #call_log.write("Call acknowledged at "+time.strftime("(%H:%M:%S)", time.localtime())+ "\n")
+            my_log.ack()
             if destination in registrar:
                 socket, claddr = self.getSocketInfo(destination)
                 # self.changeRequestUri()
@@ -384,8 +392,11 @@ class UDPHandler(socketserver.BaseRequestHandler):
             elif rx_ack.search(request_uri):
                 self.processAck()
             elif rx_bye.search(request_uri):
+                #call_log.write("Call ended at "+time.strftime("(%H:%M:%S)", time.localtime()) + "\n")
+                my_log.bye()
                 self.processNonInvite()
             elif rx_cancel.search(request_uri):
+                my_log.cancel = True
                 self.processNonInvite()
             elif rx_options.search(request_uri):
                 self.processNonInvite()
@@ -413,7 +424,7 @@ class UDPHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         # socket.setdefaulttimeout(120)
-        print("Data:", self.request[0])
+        #print("Data:", self.request[0])
         data = self.request[0].decode("windows-1252")
         self.data = data.split("\r\n")
         self.socket = self.request[1]

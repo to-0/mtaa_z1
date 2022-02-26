@@ -19,7 +19,8 @@ import socket
 # import threading
 import time
 import logging
-HOST, PORT = '127.0.0.1', 5060
+HOST, PORT = '0.0.0.0', 5060
+from call_logger import CallLogger
 #PORT = 5060
 #HOST, PORT = '192.168.56.1', 5060
 rx_register = re.compile("^REGISTER")
@@ -71,10 +72,10 @@ recordroute = "Record-Route: <sip:%s:%d;lr>" % (ipaddress, PORT)
 topvia = "Via: SIP/2.0/UDP %s:%d" % (ipaddress, PORT)
 registrar = {}
 # moj log
-# call_log = open("call_log.txt", 'w')
-# my_log = CallLogger(call_log)
-my_log = 0
-call_log = 0
+call_log = open("call_log.txt", 'w')
+my_log = CallLogger(call_log)
+#my_log = 0
+#
 
 
 
@@ -304,7 +305,7 @@ class UDPHandler(socketserver.BaseRequestHandler):
                 showtime()
                 print("Idem pisat")
                 #call_log.write("INVITE from" + origin +" to "+ destination+ " at "+time.strftime("(%H:%M:%S)", time.localtime())+ "\n")
-                my_log.invite(origin,destination)
+                my_log.invitel(origin, destination)
                 logging.info("<<< %s" % data[0])
                 logging.debug("---\n<< server send [%d]:\n%s\n---" % (len(text), text))
             else:
@@ -317,11 +318,13 @@ class UDPHandler(socketserver.BaseRequestHandler):
         logging.debug(" ACK received ")
         logging.debug("--------------")
         print("ACK RECEIVED")
+        # toto som pridal ja tento riadok
+        origin = self.getOrigin()
         destination = self.getDestination()
         if len(destination) > 0:
             logging.info("destination %s" % destination)
             #call_log.write("Call acknowledged at "+time.strftime("(%H:%M:%S)", time.localtime())+ "\n")
-            my_log.ack()
+            my_log.ack(origin,destination)
             if destination in registrar:
                 socket, claddr = self.getSocketInfo(destination)
                 # self.changeRequestUri()
@@ -373,7 +376,6 @@ class UDPHandler(socketserver.BaseRequestHandler):
                 socket, claddr = self.getSocketInfo(origin)
                 self.data = self.removeRouteHeader()
                 data = self.removeTopVia()
-                #text = string.join(data, "\r\n")
                 text = "\r\n".join(data)
                 text = text.encode("windows-1252")
                 socket.sendto(text, claddr)
@@ -393,10 +395,12 @@ class UDPHandler(socketserver.BaseRequestHandler):
                 self.processAck()
             elif rx_bye.search(request_uri):
                 #call_log.write("Call ended at "+time.strftime("(%H:%M:%S)", time.localtime()) + "\n")
-                my_log.bye()
+                origin = self.getOrigin()
+                my_log.bye(origin)
                 self.processNonInvite()
             elif rx_cancel.search(request_uri):
-                my_log.cancel = True
+                origin = self.getOrigin()
+                my_log.cancel_log(origin)
                 self.processNonInvite()
             elif rx_options.search(request_uri):
                 self.processNonInvite()
@@ -445,22 +449,7 @@ class UDPHandler(socketserver.BaseRequestHandler):
 
 
 if __name__ == "__main__":
-    # logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', filename='proxy.log', level=logging.INFO,
-    #                     datefmt='%H:%M:%S')
-    # logging.info(time.strftime("%a, %d %b %Y %H:%M:%S ", time.localtime()))
     hostname = socket.gethostname()
-    # logging.info(hostname)
     ipaddress = socket.gethostbyname(hostname)
-    # print("IPcka ", ipaddress)
-    # if ipaddress == "127.0.0.1":
-    #     ipaddress = sys.argv[1]
-    # logging.info(ipaddress)
-    # recordroute = "Record-Route: <sip:%s:%d;lr>" % (ipaddress, PORT)
-    # topvia = "Via: SIP/2.0/UDP %s:%d" % (ipaddress, PORT)
     print(recordroute)
     print(topvia)
-    #menim hosta
-    # HOST = ipaddress
-    # print(HOST)
-    # server = socketserver.UDPServer((HOST, PORT), UDPHandler)
-    # server.serve_forever()

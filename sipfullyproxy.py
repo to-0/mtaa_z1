@@ -303,13 +303,12 @@ class UDPHandler(socketserver.BaseRequestHandler):
                 text = "\r\n".join(data)
                 socket.sendto(text.encode('windows-1252'), claddr)
                 showtime()
-                print("Idem pisat")
                 #call_log.write("INVITE from" + origin +" to "+ destination+ " at "+time.strftime("(%H:%M:%S)", time.localtime())+ "\n")
                 my_log.invitel(origin, destination)
                 logging.info("<<< %s" % data[0])
                 logging.debug("---\n<< server send [%d]:\n%s\n---" % (len(text), text))
             else:
-                self.sendResponse("480 Temporarily Unavailable")
+                self.sendResponse("480 NE")
         else:
             self.sendResponse("500 Server Internal Error")
 

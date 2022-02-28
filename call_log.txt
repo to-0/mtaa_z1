@@ -1,4 +1,13 @@
-
 INVITE from tablet@192.168.1.20 to mobil@192.168.1.20 at (11:16:30)
 Call acknowledged at 11:16:33
 Call finished at (11:16:45)
+INVITE from test@147.175.162.158 to neviem@147.175.162.158 at (13:23:02 28022022)
+Call acknowledged at 13:23:08 28022022
+Call finished at 13:23:25 28022022
+INVITE from neviem@147.175.162.158 to adamko@147.175.162.158 at (13:38:06 28022022)
+Call acknowledged at 13:38:09 28.02.2022
+Call finished at 13:38:15 28022022
+INVITE from tablet@192.168.1.20 to pct@192.168.1.20 at (20:35:58 28.02.2022)
+Call acknowledged at 20:36:01 28.02.2022
+Call finished at 20:36:09 28.02.2022
+Call finished at 20:36:09 28.02.2022

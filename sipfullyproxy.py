@@ -72,8 +72,8 @@ recordroute = "Record-Route: <sip:%s:%d;lr>" % (ipaddress, PORT)
 topvia = "Via: SIP/2.0/UDP %s:%d" % (ipaddress, PORT)
 registrar = {}
 # moj log
-call_log = open("call_log.txt", 'w')
-my_log = CallLogger(call_log)
+call_log = None
+my_log = None
 #my_log = 0
 #
 
@@ -447,9 +447,9 @@ class UDPHandler(socketserver.BaseRequestHandler):
                 hexdump(data, ' ', 16)
                 logging.warning("---")
 
-
-if __name__ == "__main__":
-    hostname = socket.gethostname()
-    ipaddress = socket.gethostbyname(hostname)
-    print(recordroute)
-    print(topvia)
+#
+# if __name__ == "__main__":
+#     hostname = socket.gethostname()
+#     ipaddress = socket.gethostbyname(hostname)
+#     print(recordroute)
+#     print(topvia)

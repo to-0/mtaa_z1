@@ -7,9 +7,10 @@ def main():
     sipfullyproxy.my_log = CallLogger(sipfullyproxy.call_log)
     print("IP address:", ipaddress)
     server = socketserver.UDPServer((ipaddress, 5060), UDPHandler)
-    server.serve_forever()
-    print("Koncim")
-    sipfullyproxy.call_log.close()
-
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("Shutting down")
+        sipfullyproxy.call_log.close()
 
 main()
